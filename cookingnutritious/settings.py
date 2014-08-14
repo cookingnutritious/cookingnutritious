@@ -36,7 +36,28 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social.apps.django_app.default',
+    'cookingnutritious',
     'food',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+   'django.contrib.auth.context_processors.auth',
+   'django.core.context_processors.debug',
+   'django.core.context_processors.i18n',
+   'django.core.context_processors.media',
+   'django.core.context_processors.static',
+   'django.core.context_processors.tz',
+   'django.contrib.messages.context_processors.messages',
+   'social.apps.django_app.context_processors.backends',
+   'social.apps.django_app.context_processors.login_redirect',
+)
+
+AUTHENTICATION_BACKENDS = (
+   'social.backends.facebook.FacebookOAuth2',
+   'social.backends.google.GoogleOAuth2',
+   'social.backends.twitter.TwitterOAuth',
+   'django.contrib.auth.backends.ModelBackend',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -47,6 +68,19 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+LOGIN_REDIRECT_URL = '/'
+
+SOCIAL_AUTH_FACEBOOK_KEY = '522568191211208'
+SOCIAL_AUTH_FACEBOOK_SECRET = '6bb58b25a208229d356e63333aa650ac'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '135107696376-ffdf3daa11krq5jvtnhs08ucpbbn5r9j.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'kcXd3VRa98QwkG5gt3zx5LwS'
+SOCIAL_AUTH_GOOGLE_OAUTH2_USE_DEPRECATED_API = True
+SOCIAL_AUTH_GOOGLE_PLUS_USE_DEPRECATED_API = True
+
+SOCIAL_AUTH_TWITTER_KEY = 'aaAdgOUnrFpi0PEW95IwBUgwn'
+SOCIAL_AUTH_TWITTER_SECRET = '1GGzQqy3jm6Xb8Vv3AOfYU1tFaApiElnO2AA7yrLzvpbi1wNl4'
 
 ROOT_URLCONF = 'cookingnutritious.urls'
 
@@ -83,4 +117,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static/' 
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "static"),
+)
