@@ -28,4 +28,13 @@ class Ingredient(models.Model):
     vitamin_b = models.IntegerField('Vitamin B', default=0)
     vitamin_c = models.IntegerField('Vitamin C', default=0)
     vitamin_d = models.IntegerField('Vitamin D', default=0)
+    calcium = models.IntegerField(default=0)
+    iron = models.IntegerField(default=0)
 
+class Recipe(models.Model):
+    def __unicode__( self ):
+        return self.name
+    name = models.CharField(max_length=200)
+    instructions = models.TextField()
+    prepare_time = models.IntegerField(default=0)
+    cook_time = models.IntegerField(default=0)
