@@ -15,3 +15,13 @@ class IngredientAdmin(admin.ModelAdmin):
     list_display = (ingredient_display_name,)
 
 admin.site.register(models.Ingredient, IngredientAdmin)
+
+class RecipeAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(models.Recipe, RecipeAdmin)
+
+class RecipeItemAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(models.RecipeItem, RecipeAdmin)
