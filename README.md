@@ -11,3 +11,9 @@ This application depends on a range of different software listed below.
     pip install python-openid
 ###requests-oauthlib
     pip install requests-oauthlib
+###djangorestframework
+    pip install djangorestframework
+###markdown
+   pip install markdown
+###django-filter
+   pip install django-filter
