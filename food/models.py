@@ -41,10 +41,9 @@ class Recipe(models.Model):
     cook_time = models.IntegerField(default=0)
     servings = models.IntegerField('Makes how many servings', default=1)
 
-
 class RecipeItem(models.Model):
     def __unicode__( self ):
         return self.ingredient.name
-    recipe = models.ForeignKey(Recipe)
+    recipe = models.ForeignKey(Recipe, related_name='recipe_items')
     ingredient = models.ForeignKey(Ingredient)
     amount = models.IntegerField(default=1)
