@@ -15,14 +15,17 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 class MeasurementSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Measurement
+        fields = ('url', 'unit')
 
 class IngredientSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Ingredient
+        fields = ('url', 'measurement', 'name', 'calories', 'calories_from_fat', 'total_fat', 'saturated_fat', 'trans_fat', 'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein', 'vitamin_a', 'vitamin_b', 'vitamin_c', 'vitamin_d', 'calcium', 'iron', 'potassium')
 
 class RecipeItemSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RecipeItem
+        fields = ('url', 'recipe', 'ingredient', 'amount')
 
 class RecipeItemListingField(serializers.RelatedField):
     def to_native(self, value):
@@ -32,4 +35,4 @@ class RecipeSerializer(serializers.HyperlinkedModelSerializer):
     recipe_items = RecipeItemListingField(many=True)
     class Meta:
         model = Recipe
-        fields = ('user', 'name', 'instructions', 'prepare_time', 'cook_time', 'servings', 'recipe_items')
+        fields = ('url', 'name', 'instructions', 'prepare_time', 'cook_time', 'servings', 'recipe_items')
