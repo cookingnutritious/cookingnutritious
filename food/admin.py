@@ -1,27 +1,44 @@
 import models
+from django import forms
 from django.contrib import admin
 
 # Register your models here.
 
-class MeasurementAdmin(admin.ModelAdmin):
-    pass
+class FoodAdmin(admin.ModelAdmin):
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.user = request.user
+        obj.save()
+    def get_queryset(self, request):
+        qs = super(FoodAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(user=request.user)
+    exclude = ('user',)
 
-admin.site.register(models.Measurement, MeasurementAdmin)
+class RecipeItemInline(admin.TabularInline):
+  model = models.RecipeItem
+  exclude = ('user', )
+  extra = 1
 
-def ingredient_display_name(obj):
-    return ("%s (%s)" % (obj.name, obj.measurement))
-ingredient_display_name.short_description = 'Name'
-class IngredientAdmin(admin.ModelAdmin):
-    list_display = (ingredient_display_name,)
-
-admin.site.register(models.Ingredient, IngredientAdmin)
-
-class RecipeAdmin(admin.ModelAdmin):
-    pass
-
+class RecipeAdmin(FoodAdmin):
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            instance.user = request.user
+            instance.save()
+        formset.save_m2m()
+    inlines = ( RecipeItemInline, )
 admin.site.register(models.Recipe, RecipeAdmin)
 
-class RecipeItemAdmin(admin.ModelAdmin):
+class RecipeItemAdmin(FoodAdmin):
     pass
-
 admin.site.register(models.RecipeItem, RecipeAdmin)
+
+class IngredientAdmin(FoodAdmin):
+    pass
+admin.site.register(models.Ingredient, IngredientAdmin)
+
+class MeasurementAdmin(admin.ModelAdmin):
+    pass
+admin.site.register(models.Measurement, MeasurementAdmin)
