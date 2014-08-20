@@ -26,7 +26,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     def get_queryset(self):
         user = self.request.user
-        return Recipe.objects.filter(user=user)
+        recipies = Recipe.objects.filter(user=user);
+        for recipe in recipies:
+            recipe = recipe.get_nutritional_information()
+        return recipies
 
 class RecipeItemViewSet(viewsets.ModelViewSet):
     queryset = RecipeItem.objects.all()
