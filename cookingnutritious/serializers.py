@@ -29,10 +29,10 @@ class RecipeItemSerializer(serializers.HyperlinkedModelSerializer):
 
 class RecipeItemListingField(serializers.RelatedField):
     def to_native(self, value):
-        return '%d %s %s' % (value.amount, value.ingredient.measurement, value.ingredient.name)
+        return ('%f' % value.amount).rstrip('0').rstrip('.').lstrip('0') + (' %s %s ') % (value.ingredient.measurement, value.ingredient.name)
 
 class RecipeSerializer(serializers.HyperlinkedModelSerializer):
     recipe_items = RecipeItemListingField(many=True)
     class Meta:
         model = Recipe
-        fields = ('url', 'name', 'instructions', 'prepare_time', 'cook_time', 'servings', 'recipe_items')
+        fields = ('url', 'name', 'instructions', 'prepare_time', 'cook_time', 'servings', 'recipe_items', 'calories', 'calories_from_fat', 'total_fat', 'saturated_fat', 'trans_fat', 'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein', 'vitamin_a', 'vitamin_b', 'vitamin_c', 'vitamin_d', 'calcium', 'iron', 'potassium')
