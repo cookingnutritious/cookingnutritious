@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from tinymce.models import HTMLField
 
 # Create your models here.
 
@@ -83,10 +84,11 @@ class Recipe(Nutrition):
             
     user = models.ForeignKey(User)
     name = models.CharField(max_length=200)
-    instructions = models.TextField()
+    instructions = HTMLField()
     prepare_time = models.IntegerField(default=0)
     cook_time = models.IntegerField(default=0)
     servings = models.FloatField('Makes how many servings', default=1)
+    serving_size = models.CharField(max_length=30)
 
 
 class RecipeItem(models.Model):
@@ -96,3 +98,11 @@ class RecipeItem(models.Model):
     recipe = models.ForeignKey(Recipe, related_name='recipe_items')
     ingredient = models.ForeignKey(Ingredient)
     amount = models.FloatField(default=1)
+
+class RecipePhoto(models.Model):
+    def __unicode__( self ):
+        return ("%s - %s" % (self.recipe, self.name))
+    user = models.ForeignKey(User)
+    recipe = models.ForeignKey(Recipe, related_name='recipe_photos')
+    name = models.CharField(max_length=30)
+    uri = models.CharField(max_length=255)

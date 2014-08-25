@@ -43,6 +43,7 @@ INSTALLED_APPS = (
     'social.apps.django_app.default',
     'rest_framework',
     'rest_framework.authtoken',
+    'tinymce',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

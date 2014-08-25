@@ -21,6 +21,11 @@ class RecipeItemInline(admin.TabularInline):
   exclude = ('user', )
   extra = 1
 
+class RecipePhotoInline(admin.TabularInline):
+  model = models.RecipePhoto
+  exclude = ('user', )
+  extra = 1
+
 class RecipeAdmin(FoodAdmin):
     exclude = ('user', 'calories', 'calories_from_fat', 'total_fat', 'saturated_fat', 'trans_fat', 'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein', 'vitamin_a', 'vitamin_b', 'vitamin_c', 'vitamin_d', 'calcium', 'iron', 'potassium')
     def save_formset(self, request, form, formset, change):
@@ -29,12 +34,16 @@ class RecipeAdmin(FoodAdmin):
             instance.user = request.user
             instance.save()
         formset.save_m2m()
-    inlines = ( RecipeItemInline, )
+    inlines = [ RecipeItemInline, RecipePhotoInline ]
 admin.site.register(models.Recipe, RecipeAdmin)
 
 class RecipeItemAdmin(FoodAdmin):
     pass
 admin.site.register(models.RecipeItem, RecipeAdmin)
+
+class RecipePhotoAdmin(FoodAdmin):
+    pass
+admin.site.register(models.RecipePhoto, RecipeAdmin)
 
 class IngredientAdmin(FoodAdmin):
     pass
