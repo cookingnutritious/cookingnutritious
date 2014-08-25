@@ -8,10 +8,11 @@ admin.autodiscover()
 
 # Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
-router.register(r'recipies', views.RecipeViewSet)
+router.register(r'recipes', views.RecipeViewSet)
 router.register(r'recipeitems', views.RecipeItemViewSet)
 router.register(r'ingredients', views.IngredientViewSet)
 router.register(r'measurements', views.MeasurementViewSet)
+router.register(r'photos', views.RecipePhotoViewSet)
 
 urlpatterns = patterns('',
     # Examples:
@@ -23,4 +24,5 @@ urlpatterns = patterns('',
     url('', include('django.contrib.auth.urls', namespace='auth')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^tinymce/', include('tinymce.urls')),
 )
