@@ -16,6 +16,14 @@ class FoodAdmin(admin.ModelAdmin):
         return qs.filter(user=request.user)
     exclude = ('user',)
 
+class RecipePhotoAdmin(FoodAdmin):
+    pass
+admin.site.register(models.RecipePhoto, RecipePhotoAdmin)
+
+class IngredientAdmin(FoodAdmin):
+    pass
+admin.site.register(models.Ingredient, IngredientAdmin)
+
 class RecipeItemInline(admin.TabularInline):
   model = models.RecipeItem
   exclude = ('user', )
@@ -40,14 +48,6 @@ admin.site.register(models.Recipe, RecipeAdmin)
 class RecipeItemAdmin(FoodAdmin):
     pass
 admin.site.register(models.RecipeItem, RecipeAdmin)
-
-class RecipePhotoAdmin(FoodAdmin):
-    pass
-admin.site.register(models.RecipePhoto, RecipeAdmin)
-
-class IngredientAdmin(FoodAdmin):
-    pass
-admin.site.register(models.Ingredient, IngredientAdmin)
 
 class MeasurementAdmin(admin.ModelAdmin):
     pass
