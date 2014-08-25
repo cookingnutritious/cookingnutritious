@@ -22,6 +22,7 @@ class RecipeItemInline(admin.TabularInline):
   extra = 1
 
 class RecipeAdmin(FoodAdmin):
+    exclude = ('user', 'calories', 'calories_from_fat', 'total_fat', 'saturated_fat', 'trans_fat', 'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein', 'vitamin_a', 'vitamin_b', 'vitamin_c', 'vitamin_d', 'calcium', 'iron', 'potassium')
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
         for instance in instances:
