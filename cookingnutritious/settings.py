@@ -87,6 +87,8 @@ SOCIAL_AUTH_GOOGLE_PLUS_USE_DEPRECATED_API = True
 SOCIAL_AUTH_TWITTER_KEY = 'aaAdgOUnrFpi0PEW95IwBUgwn'
 SOCIAL_AUTH_TWITTER_SECRET = '1GGzQqy3jm6Xb8Vv3AOfYU1tFaApiElnO2AA7yrLzvpbi1wNl4'
 
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
+
 ROOT_URLCONF = 'cookingnutritious.urls'
 
 WSGI_APPLICATION = 'cookingnutritious.wsgi.application'
