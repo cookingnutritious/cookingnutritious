@@ -54,8 +54,6 @@
                         <div id="thirdpartylogin" >
                           <div class="fb-icon-bg"></div>
                             <div class="fb-bg"></div>
-                          <div class="twi-icon-bg"></div>
-                            <div class="twi-bg"></div>
                           <div class="g-icon-bg"></div>
                             <div class="g-bg"></div>
                         </div>
@@ -68,10 +66,6 @@
             $( document ).ready(function() {
                 $(".fb-icon-bg,.fb-bg").click(function () {
                     window.location='{% url 'social:begin' 'facebook' %}?next={{ request.path }}';
-                });
-
-                $(".twi-icon-bg,.twi-bg").click(function () {
-                    window.location='{% url 'social:begin' 'twitter' %}?next={{ request.path }}';
                 });
 
                 $(".g-icon-bg,.g-bg").click(function () {

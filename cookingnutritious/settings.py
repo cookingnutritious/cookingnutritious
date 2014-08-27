@@ -78,16 +78,31 @@ LOGIN_REDIRECT_URL = '/'
 
 SOCIAL_AUTH_FACEBOOK_KEY = '522568191211208'
 SOCIAL_AUTH_FACEBOOK_SECRET = '6bb58b25a208229d356e63333aa650ac'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '135107696376-ffdf3daa11krq5jvtnhs08ucpbbn5r9j.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'kcXd3VRa98QwkG5gt3zx5LwS'
 SOCIAL_AUTH_GOOGLE_OAUTH2_USE_DEPRECATED_API = True
 SOCIAL_AUTH_GOOGLE_PLUS_USE_DEPRECATED_API = True
 
-SOCIAL_AUTH_TWITTER_KEY = 'aaAdgOUnrFpi0PEW95IwBUgwn'
-SOCIAL_AUTH_TWITTER_SECRET = '1GGzQqy3jm6Xb8Vv3AOfYU1tFaApiElnO2AA7yrLzvpbi1wNl4'
+#SOCIAL_AUTH_TWITTER_KEY = 'aaAdgOUnrFpi0PEW95IwBUgwn'
+#SOCIAL_AUTH_TWITTER_SECRET = '1GGzQqy3jm6Xb8Vv3AOfYU1tFaApiElnO2AA7yrLzvpbi1wNl4'
 
 SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
+
+SOCIAL_AUTH_PIPELINE = (
+    'social.pipeline.social_auth.social_details',
+    'social.pipeline.social_auth.social_uid',
+    'social.pipeline.social_auth.auth_allowed',
+    'social.pipeline.social_auth.social_user',
+    'social.pipeline.user.get_username',
+    #'social.pipeline.mail.mail_validation',
+    'social.pipeline.social_auth.associate_by_email',
+    'social.pipeline.user.create_user',
+    'social.pipeline.social_auth.associate_user',
+    'social.pipeline.social_auth.load_extra_data',
+    'social.pipeline.user.user_details'
+)
 
 ROOT_URLCONF = 'cookingnutritious.urls'
 
