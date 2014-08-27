@@ -1,9 +1,9 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
 from rest_framework import viewsets
-from food.models import Measurement, Ingredient, Recipe, RecipeItem, RecipePhoto
+from food.models import Measurement, Ingredient, Recipe, RecipeItem, RecipePhoto, MealCategory, Tag
 from django.contrib.auth.models import User, Group
-from cookingnutritious.serializers import UserSerializer, GroupSerializer, MeasurementSerializer, IngredientSerializer, RecipeSerializer, RecipeItemSerializer, RecipePhotoSerializer
+from cookingnutritious.serializers import UserSerializer, GroupSerializer, MeasurementSerializer, IngredientSerializer, RecipeSerializer, RecipeItemSerializer, RecipePhotoSerializer, MealCategorySerializer, TagSerializer
 from django.shortcuts import get_object_or_404
 
 # Create your views here.
@@ -67,6 +67,13 @@ class RecipeItemViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return RecipeItem.objects.filter(user=user)
 
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = RecipeItem.objects.all()
+    serializer_class = TagSerializer
+    def get_queryset(self):
+        user = self.request.user
+        return Tag.objects.filter(user=user)
+
 class RecipePhotoViewSet(viewsets.ModelViewSet):
     queryset = RecipePhoto.objects.all()
     serializer_class = RecipePhotoSerializer
@@ -84,3 +91,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 class MeasurementViewSet(viewsets.ModelViewSet):
     queryset = Measurement.objects.all()
     serializer_class = MeasurementSerializer
+
+class MealCategoryViewSet(viewsets.ModelViewSet):
+    queryset = MealCategory.objects.all()
+    serializer_class = MealCategorySerializer

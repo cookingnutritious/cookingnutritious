@@ -13,6 +13,8 @@ router.register(r'recipeitems', views.RecipeItemViewSet)
 router.register(r'ingredients', views.IngredientViewSet)
 router.register(r'measurements', views.MeasurementViewSet)
 router.register(r'photos', views.RecipePhotoViewSet)
+router.register(r'meal_categories', views.MealCategoryViewSet)
+router.register(r'tags', views.TagViewSet)
 
 urlpatterns = patterns('',
     # Examples:
