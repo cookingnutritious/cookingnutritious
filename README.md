@@ -16,6 +16,8 @@ This application depends on a range of different software listed below.
     pip install requests-oauthlib
 ###djangorestframework
     pip install djangorestframework
+###django rest framework extensions
+    pip install drf-extensions
 ###drf-extensions
     pip install drf-extensions
 ###markdown
@@ -28,3 +30,32 @@ This application depends on a range of different software listed below.
     pip install django-forms-bootstrap
 ###django-autocomplete-light
     pip install django-autocomplete-light
+###django-memcached
+    pip install django-memcached
+
+##loading USDA Database
+###To import the latest SR22 data.  Simply use the `import_sr` management command
+as follows:
+
+ python ./manage.py import_sr -f data/usda/sr27asc.zip
+
+The above assumes that the `sr27asc.zip` file is in the "data/usda/" folder.  To specify
+an alternative location specify `-f <filename>`.
+
+###To run as a background job try:
+
+    nohup python ./manage.py import_sr -f data/usda/sr27asc.zip & > /dev/null 2>&1
+
+###The `import_sr` command takes several options:
+
+* --database <dbname> -- Specify an alternative database to populate.
+* --food -- Create/update all foods.
+* --group -- Create/Update food groups.
+* --nutrient -- Create/Update nutrients.
+* --weight -- Create/Update weights.
+* --footnote -- Create/Update footnotes.
+* --datasource -- Create/Update data sources.
+* --derivation -- Create/Update data derivations.
+* --source -- Create/Update sources.
+* --data -- Create/Update nutrient data.'
+* --all -- Create/Update all data.
