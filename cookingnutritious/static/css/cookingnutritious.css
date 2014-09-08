@@ -131,3 +131,12 @@
 .g-bg:active {
   background: #ce3e26;
 }
+
+#id_long_description {
+ margin: 4px;
+}
+
+#id_long_description_btn {
+ margin: 4px;
+}
+

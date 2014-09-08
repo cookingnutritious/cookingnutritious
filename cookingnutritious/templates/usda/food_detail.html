@@ -1,0 +1,11 @@
+<h1>{{ object.long_description }}</h1>
+<p>{{ object.short_description }}</p>
+<p>group: {{ object.food_group }}</p>
+<p>ndb number: {{ object.ndb_number }}</p>
+<ul>
+{% for item in nutrient_data %}
+    <li>{{ item.nutrient }}: {{ item.nutrient_value }}</li>
+{% empty %}
+    <li>No nutrition info</li>
+{% endfor %}
+</ul>

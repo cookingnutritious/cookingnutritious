@@ -1,0 +1,23 @@
+{% extends "admin/base_site.html" %}
+
+{% block bodyclass %}subscribe{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content_title %}Subscribe{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<form action="" method="POST">{% csrf_token %}
+  <script
+    src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+    data-key="{{ stripe_public_key }}"
+    data-amount="2000"
+    data-name="Demo Site"
+    data-description="2 widgets ($20.00)"
+    data-image="/static/img/marketplace.png">
+  </script>
+</form>
+
+{% endblock %}

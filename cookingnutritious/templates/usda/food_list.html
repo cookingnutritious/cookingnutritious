@@ -1,0 +1,8 @@
+<h1>Food</h1>
+<ul>
+{% for food in object_list %}
+    <li><a href="{% url 'usda:usda-food_detail' food.ndb_number %}" >{{ food.long_description }} - {{ food.food_group.description }}</a></li>
+{% empty %}
+    <li>No food yet.</li>
+{% endfor %}
+</ul>

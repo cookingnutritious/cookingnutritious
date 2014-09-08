@@ -1,6 +1,47 @@
 from django.db import models
+from datetime import datetime
 from django.contrib.auth.models import User
 from tinymce.models import HTMLField
+
+def compose_nutritional_information(obj, collection):
+        for item in collection:
+            obj.calories += item.ingredient.calories * item.amount
+            obj.calories_from_fat += item.ingredient.calories_from_fat * item.amount
+            obj.total_fat += item.ingredient.total_fat * item.amount
+            obj.saturated_fat += item.ingredient.saturated_fat * item.amount
+            obj.trans_fat += item.ingredient.trans_fat * item.amount
+            obj.cholesterol += item.ingredient.cholesterol * item.amount
+            obj.sodium += item.ingredient.sodium * item.amount
+            obj.carbohydrate += item.ingredient.carbohydrate * item.amount
+            obj.fiber += item.ingredient.fiber * item.amount
+            obj.sugars += item.ingredient.sugars * item.amount
+            obj.protein += item.ingredient.protein * item.amount
+            obj.vitamin_a += item.ingredient.vitamin_a * item.amount
+            obj.vitamin_b += item.ingredient.vitamin_b * item.amount
+            obj.vitamin_c += item.ingredient.vitamin_c * item.amount
+            obj.vitamin_d += item.ingredient.vitamin_d * item.amount
+            obj.calcium += item.ingredient.calcium * item.amount
+            obj.iron += item.ingredient.iron * item.amount
+            obj.potassium += item.ingredient.potassium * item.amount
+        obj.calories = round(obj.calories/obj.servings, 2)
+        obj.calories_from_fat = round(obj.calories_from_fat/obj.servings, 2)
+        obj.total_fat = round(obj.total_fat/obj.servings, 2)
+        obj.saturated_fat = round(obj.saturated_fat/obj.servings, 2)
+        obj.trans_fat = round(obj.trans_fat/obj.servings, 2)
+        obj.cholesterol = round(obj.cholesterol/obj.servings, 2)
+        obj.sodium = round(obj.sodium/obj.servings, 2)
+        obj.carbohydrate = round(obj.carbohydrate/obj.servings, 2)
+        obj.fiber = round(obj.fiber/obj.servings, 2)
+        obj.sugars = round(obj.sugars/obj.servings, 2)
+        obj.protein = round(obj.protein/obj.servings, 2)
+        obj.vitamin_a = round(obj.vitamin_a/obj.servings, 2)
+        obj.vitamin_b = round(obj.vitamin_b/obj.servings, 2)
+        obj.vitamin_c = round(obj.vitamin_c/obj.servings, 2)
+        obj.vitamin_d = round(obj.vitamin_d/obj.servings, 2)
+        obj.calcium = round(obj.calcium/obj.servings, 2)
+        obj.iron = round(obj.iron/obj.servings, 2)
+        obj.potassium = round(obj.potassium/obj.servings, 2)
+        return obj
 
 # Create your models here.
 class MealCategory(models.Model):
@@ -18,6 +59,7 @@ class Measurement(models.Model):
     def __unicode__( self ):
         return self.unit
     unit = models.CharField(max_length=50)
+    gram_weight = models.FloatField(default=0)
 
 class Nutrition(models.Model):
     class Meta:
@@ -50,58 +92,16 @@ class Ingredient(Nutrition):
     
 class Recipe(Nutrition):
     def __unicode__( self ):
-        return self.name
-
-    def get_nutritional_information(self):
-        recipe_items = RecipeItem.objects.filter(recipe=self)
-        for item in recipe_items:
-            self.calories += item.ingredient.calories
-            self.calories_from_fat += item.ingredient.calories_from_fat
-            self.total_fat += item.ingredient.total_fat
-            self.saturated_fat += item.ingredient.saturated_fat
-            self.trans_fat += item.ingredient.trans_fat
-            self.cholesterol += item.ingredient.cholesterol
-            self.sodium += item.ingredient.sodium
-            self.carbohydrate += item.ingredient.carbohydrate
-            self.fiber += item.ingredient.fiber
-            self.sugars += item.ingredient.sugars
-            self.protein += item.ingredient.protein
-            self.vitamin_a += item.ingredient.vitamin_a
-            self.vitamin_b += item.ingredient.vitamin_b
-            self.vitamin_c += item.ingredient.vitamin_c
-            self.vitamin_d += item.ingredient.vitamin_d
-            self.calcium += item.ingredient.calcium
-            self.iron += item.ingredient.iron
-            self.potassium += item.ingredient.potassium
-        self.calories = self.calories/self.servings
-        self.calories_from_fat = self.calories_from_fat/self.servings
-        self.total_fat = self.total_fat/self.servings
-        self.trans_fat = self.trans_fat/self.servings
-        self.cholesterol = self.cholesterol/self.servings
-        self.sodium = self.sodium/self.servings
-        self.carbohydrate = self.carbohydrate/self.servings
-        self.fiber = self.fiber/self.servings
-        self.sugars = self.sugars/self.servings
-        self.protein = self.protein/self.servings
-        self.vitamin_a = self.vitamin_a/self.servings
-        self.vitamin_b = self.vitamin_b/self.servings
-        self.vitamin_c = self.vitamin_c/self.servings
-        self.vitamin_d = self.vitamin_d/self.servings
-        self.calcium = self.calcium/self.servings
-        self.iron = self.iron/self.servings
-        self.potassium = self.potassium/self.servings
-        return self
-            
+        return self.name    
     user = models.ForeignKey(User)
     name = models.CharField(max_length=200)
     instructions = HTMLField()
     prepare_time = models.IntegerField(default=0)
     cook_time = models.IntegerField(default=0)
     servings = models.FloatField('Makes how many servings', default=1)
-    serving_size = models.CharField(max_length=30)
-    tags = models.ManyToManyField(Tag)
-    meal_category = models.ForeignKey(MealCategory, blank=True, null=True, on_delete=models.SET_NULL)
-
+    serving_size = models.CharField(max_length=30, blank=True, null=True)
+    tags = models.ManyToManyField(Tag, blank=True, null=True)
+    meal_category = models.ForeignKey(MealCategory)
 
 class RecipeItem(models.Model):
     def __unicode__( self ):
@@ -118,3 +118,18 @@ class RecipePhoto(models.Model):
     recipe = models.ForeignKey(Recipe, related_name='recipe_photos')
     name = models.CharField(max_length=30)
     uri = models.CharField(max_length=255)
+
+class Meal(Nutrition):
+    def __unicode__( self ):
+        return ("%s - %s" % (self.meal_category, self.day))
+    user = models.ForeignKey(User)
+    day = models.DateField("day", default=datetime.now)
+    meal_category = models.ForeignKey(MealCategory, blank=False, null=False)
+
+class MealItem(Nutrition):
+    def __unicode__( self ):
+        return ("%s" % (self.name))
+    user = models.ForeignKey(User)
+    amount = models.FloatField(default=1)
+    name = models.CharField(max_length=200)
+    meal = models.ForeignKey(Meal, related_name='meal_items')

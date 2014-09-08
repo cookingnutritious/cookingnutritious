@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
 from food.models import Measurement, Ingredient, Recipe, RecipeItem, RecipePhoto, MealCategory
+from usda.models import Food, NutrientData, Nutrient
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -12,10 +13,31 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
         model = Group
         fields = ('url', 'name')
 
+class FoodGroupListingField(serializers.RelatedField):
+    def to_native(self, value):
+        return ('%s') % (value.description)
+
+class NutrientDataListingField(serializers.RelatedField):
+    def to_native(self, value):
+        return {('%s' % value.nutrient.description) : ('%f' % value.nutrient_value).rstrip('0').rstrip('.').lstrip('0'), }
+
+class FoodSerializer(serializers.HyperlinkedModelSerializer):
+    food_group = FoodGroupListingField()
+    class Meta:
+        model = Food
+        fields = ('url', 'long_description', 'ndb_number')
+
+class FoodDetailSerializer(serializers.HyperlinkedModelSerializer):
+    nutrients = NutrientDataListingField(many=True)
+    food_group = FoodGroupListingField()
+    class Meta:
+        model = Food
+        fields = ('url', 'long_description', 'ndb_number', 'food_group', 'nutrients', 'short_description', 'common_name', 'manufacturer_name', 'survey', 'refuse_description', 'refuse_percentage', 'scientific_name', 'nitrogen_factor', 'protein_factor', 'fat_factor', 'cho_factor' )
+
 class MeasurementSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Measurement
-        fields = ('url', 'unit')
+        fields = ('url', 'unit', 'gram_weight')
 
 class MealCategorySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

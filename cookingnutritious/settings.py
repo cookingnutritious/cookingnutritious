@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = (
     'cookingnutritious',
     'food',
+    'usda',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,7 +44,11 @@ INSTALLED_APPS = (
     'social.apps.django_app.default',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_extensions',
     'tinymce',
+    'payments',
+    'django_forms_bootstrap',
+    'autocomplete_light',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -56,12 +61,13 @@ TEMPLATE_CONTEXT_PROCESSORS = (
    'django.contrib.messages.context_processors.messages',
    'social.apps.django_app.context_processors.backends',
    'social.apps.django_app.context_processors.login_redirect',
+   #'payments.context_processors.payments_settings',
 )
 
 AUTHENTICATION_BACKENDS = (
    'social.backends.facebook.FacebookOAuth2',
    'social.backends.google.GoogleOAuth2',
-   'social.backends.twitter.TwitterOAuth',
+   #'social.backends.twitter.TwitterOAuth',
    'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -72,9 +78,12 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'payments.middleware.ActiveSubscriptionMiddleware',
 )
 
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
 
 SOCIAL_AUTH_FACEBOOK_KEY = '522568191211208'
 SOCIAL_AUTH_FACEBOOK_SECRET = '6bb58b25a208229d356e63333aa650ac'
@@ -103,6 +112,81 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details'
 )
+
+SUBSCRIPTION_REQUIRED_EXCEPTION_URLS = (
+    'payments_subscribe',
+)
+
+SUBSCRIPTION_REQUIRED_REDIRECT = 'payments_subscribe'
+
+STRIPE_SECRET_KEY = os.environ.get(
+    "STRIPE_SECRET_KEY",
+    "sk_test_bLo1LqgqWZX1sSRuk13i78ZD"
+)
+STRIPE_PUBLIC_KEY = os.environ.get(
+    "STRIPE_PUBLIC_KEY",
+    "pk_test_hcIx0t8Z6WiRq69FaTvKj7iI"
+)
+
+PAYMENTS_PLANS = {
+    "monthly-trial": {
+        "stripe_plan_id": "basic-monthly-trial",
+        "name": "Cooking Nutritious Basic ($10/month with 30 days free)",
+        "description": "Limited API use. Unlimited Backend use. Monthly Plan.",
+        "price": 10,
+        "currency": "usd",
+        "interval": "month",
+        "trial_period_days": 30
+    },
+    "basic-monthly": {
+        "stripe_plan_id": "basic-monthly",
+        "name": "Cooking Nutritious Basic ($10/month)",
+        "description": "Limited API use. Unlimited Backend use. Monthly Plan.",
+        "price": 10,
+        "currency": "usd",
+        "interval": "month"
+    },
+    "basic-yearly": {
+        "stripe_plan_id": "basic-yearly",
+        "name": "Cooking Nutritious Basic ($79/year)",
+        "description": "Limited API use. Unlimited Backend use. Yearly Plan.",
+        "price": 79,
+        "currency": "usd",
+        "interval": "year"
+    },
+    "pro-monthly": {
+        "stripe_plan_id": "pro-monthly",
+        "name": "Cooking Nutritious Pro ($32/month)",
+        "description": "Higher API use. Unlimited Backend use. Monthly Plan.",
+        "price": 32,
+        "currency": "usd",
+        "interval": "month"
+    },
+    "pro-yearly": {
+        "stripe_plan_id": "pro-yearly",
+        "name": "Cooking Nutritious Pro ($253/year)",
+        "description": "Higher API use. Unlimited Backend use. Yearly Plan.",
+        "price": 253,
+        "currency": "usd",
+        "interval": "year"
+    },
+    "enterprise-monthly": {
+        "stripe_plan_id": "enterprise-monthly",
+        "name": "Cooking Nutritious Enterprise ($72/month)",
+        "description": "Highest API use. Unlimited Backend use. Monthly Plan.",
+        "price": 72,
+        "currency": "usd",
+        "interval": "month"
+    },
+    "enterprise-yearly": {
+        "stripe_plan_id": "enterprise-yearly",
+        "name": "Cooking Nutritious Enterprise ($570/year)",
+        "description": "Highest API use. Unlimited Backend use. Yearly Plan.",
+        "price": 570,
+        "currency": "usd",
+        "interval": "year"
+    }
+}
 
 ROOT_URLCONF = 'cookingnutritious.urls'
 
@@ -164,7 +248,28 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+    }
 
     #'PAGINATE_BY': 20,
 
+}
+
+REST_FRAMEWORK_EXTENSIONS = {
+    'DEFAULT_OBJECT_CACHE_KEY_FUNC':
+      'rest_framework_extensions.utils.default_object_cache_key_func',
+    'DEFAULT_LIST_CACHE_KEY_FUNC':
+      'rest_framework_extensions.utils.default_list_cache_key_func',
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
 }

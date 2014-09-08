@@ -1,10 +1,19 @@
 from django.shortcuts import render_to_response
 from django.template import RequestContext, loader
-from rest_framework import viewsets
-from food.models import Measurement, Ingredient, Recipe, RecipeItem, RecipePhoto, MealCategory, Tag
+from django.http import HttpResponse
+from django.views.generic.edit import FormView
+from django.db.models import Q
+from rest_framework import viewsets, views
+from rest_framework.response import Response
+from food.models import Measurement, Ingredient, Recipe, RecipeItem, RecipePhoto, MealCategory, Tag, compose_nutritional_information
+from usda.models import Food 
 from django.contrib.auth.models import User, Group
-from cookingnutritious.serializers import UserSerializer, GroupSerializer, MeasurementSerializer, IngredientSerializer, RecipeSerializer, RecipeItemSerializer, RecipePhotoSerializer, MealCategorySerializer, TagSerializer
+from cookingnutritious.serializers import UserSerializer, GroupSerializer, MeasurementSerializer, IngredientSerializer, RecipeSerializer, RecipeItemSerializer, RecipePhotoSerializer, MealCategorySerializer, TagSerializer, FoodSerializer, FoodDetailSerializer
 from django.shortcuts import get_object_or_404
+from rest_framework_extensions.mixins import DetailSerializerMixin
+from rest_framework_extensions.cache.mixins import CacheResponseMixin
+from rest_framework_extensions.cache.decorators import cache_response
+import operator
 
 # Create your views here.
 def index(request):
@@ -14,23 +23,61 @@ def index(request):
     return render_to_response('cookingnutritious/index.html',
                              context_instance=context)
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-class GroupViewSet(viewsets.ModelViewSet):
+class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+    
+class FoodViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
+    serializer_class = FoodSerializer
+    serializer_detail_class = FoodDetailSerializer
+    queryset = Food.objects.all()
+    @cache_response(31536000)
+    def retrieve(self, request, *args, **kwargs):
+        return super(FoodViewSet, self).retrieve(request, *args, **kwargs)
+    @cache_response(31536000)
+    def list(self, request, *args, **kwargs):
+        return super(FoodViewSet, self).list(request, *args, **kwargs)
+
+class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
+    serializer_class = FoodSerializer
+    serializer_detail_class = FoodDetailSerializer
+    queryset = Food.objects.all()
+    lookup_field = 'long_description'
+    def get_search_terms(self):
+        list = self.kwargs['long_description'].replace('_', ' ').replace('XX', '\'').replace('YY', '\"').replace('ZZ', '/').split(' ')
+        return reduce(operator.and_, (Q(long_description__contains=x) for x in list))
+    def get_queryset(self, is_for_detail=False):
+        terms = self.get_search_terms()
+        return Food.objects.all().filter(terms)
+    @cache_response(31536000)
+    def list(self, request, *args, **kwargs):
+        terms = self.get_search_terms()
+        result_count = Food.objects.all().filter(terms).count()
+        if result_count > 1:
+            return super(FoodSearchViewSet, self).list(request, *args, **kwargs)
+        else:
+            return self.retrieve(request, *args, **kwargs)
+    @cache_response(31536000)
+    def retrieve(self, request, *args, **kwargs):
+        terms = self.get_search_terms()
+        object = Food.objects.all().filter(terms)
+        serializer = FoodDetailSerializer(object)
+        return Response(serializer.data)
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     def get_queryset(self):
         user = self.request.user
-        recipies = Recipe.objects.filter(user=user);
-        for recipe in recipies:
-            recipe = recipe.get_nutritional_information()
-        return recipies
+        recipes = Recipe.objects.filter(user=user);
+        for recipe in recipes:
+            recipe_items = RecipeItem.objects.filter(recipe=recipe)
+            recipe = compose_nutritional_information(recipe, recipe_items)
+        return recipes
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
@@ -56,7 +103,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
 
         obj = get_object_or_404(queryset, **filter_kwargs)
-        obj.get_nutritional_information()
+        recipe_items = RecipeItem.objects.filter(recipe=obj)
+        obj = compose_nutritional_information(obj, recipe_items)
         self.check_object_permissions(self.request, obj)
         return obj
 
@@ -88,10 +136,10 @@ class IngredientViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Ingredient.objects.filter(user=user)
 
-class MeasurementViewSet(viewsets.ModelViewSet):
+class MeasurementViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Measurement.objects.all()
     serializer_class = MeasurementSerializer
 
-class MealCategoryViewSet(viewsets.ModelViewSet):
+class MealCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = MealCategory.objects.all()
     serializer_class = MealCategorySerializer

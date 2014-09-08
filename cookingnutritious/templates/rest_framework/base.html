@@ -1,5 +1,6 @@
 ﻿{% load url from future %}
 {% load rest_framework %}
+{% load cookingnutritious %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -18,8 +19,8 @@
             <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/bootstrap-tweaks.css" %}"/>
         {% endblock %}
         <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/prettify.css" %}"/>
-        <link rel="stylesheet" type="text/css" href="{% static "css/cookingnutritious.css" %}"/>
         <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/default.css" %}"/>
+        <link rel="stylesheet" type="text/css" href="{% static "css/cookingnutritious.css" %}"/>
         {% endblock %}
 
     {% endblock %}
@@ -34,7 +35,7 @@
         <div class="navbar-inner">
             <div class="container-fluid">
                 <span href="/">
-                    {% block branding %}<a class='brand' rel="nofollow" href='http://www.django-rest-framework.org'>CookingNutritious Rest API </a>{% endblock %}
+                    {% block branding %}<a class='brand' rel="nofollow" href='http://api.cookingnutritious.com'>CookingNutritious Rest API </a>{% endblock %}
                 </span>
                 <ul class="nav pull-right">
                     {% block userlinks %}
@@ -52,6 +53,11 @@
                             <li>{% optional_login request %}</li>
                         {% endif %}
                     {% endblock %}
+                </ul>
+                <ul class="nav pull-right">
+                    <li >
+                    {% search_usda_form %}
+                    </li>
                 </ul>
             </div>
         </div>
@@ -229,6 +235,9 @@
     <script src="{% static "rest_framework/js/bootstrap.min.js" %}"></script>
     <script src="{% static "rest_framework/js/prettify-min.js" %}"></script>
     <script src="{% static "rest_framework/js/default.js" %}"></script>
+    {% include 'autocomplete_light/static.html' %}
+    <script src="{% static "js/cookingnutritious.js" %}"></script>
+
     {% endblock %}
   </body>
 </html>

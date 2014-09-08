@@ -31,6 +31,7 @@
                         <div>
                             <form action="{% url 'rest_framework:login' %}" class=" form-inline" method="post">
                                 {% csrf_token %}
+                                
                                 <div id="div_id_username" class="clearfix control-group">
                                     <div class="controls">
                                         <Label class="span4">Username:</label>
@@ -65,11 +66,11 @@
             document.getElementById('id_username').focus()
             $( document ).ready(function() {
                 $(".fb-icon-bg,.fb-bg").click(function () {
-                    window.location='{% url 'social:begin' 'facebook' %}?next={{ request.path }}';
+                    window.location='{% url 'social:begin' 'facebook' %}?next={{ request.GET.next }}';
                 });
 
                 $(".g-icon-bg,.g-bg").click(function () {
-                    window.location='{% url 'social:begin' 'google-oauth2' %}?next={{ request.path }}';
+                    window.location='{% url 'social:begin' 'google-oauth2' %}?next={{ request.GET.next }}';
                 });
 
             });
