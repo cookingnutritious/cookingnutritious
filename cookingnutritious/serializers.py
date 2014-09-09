@@ -37,7 +37,7 @@ class FoodDetailSerializer(serializers.HyperlinkedModelSerializer):
 class MeasurementSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Measurement
-        fields = ('url', 'unit', 'gram_weight')
+        fields = ('unit', 'gram_weight')
 
 class MealCategorySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

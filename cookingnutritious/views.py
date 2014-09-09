@@ -83,9 +83,17 @@ class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.Read
         serializer = FoodDetailSerializer(object, context={'request': request})
         return Response(serializer.data)
 
-class RecipeViewSet(viewsets.ModelViewSet):
+def recipe_cache_key(view_instance, view_method, 
+                        request, args, kwargs):
+    return '.'.join([
+        'recipe',
+        kwargs['pk']
+    ])
+
+class RecipeViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    serializer_detail_class = RecipeSerializer
     def get_queryset(self):
         user = self.request.user
         recipes = Recipe.objects.filter(user=user);
@@ -122,6 +130,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         obj = compose_nutritional_information(obj, recipe_items)
         self.check_object_permissions(self.request, obj)
         return obj
+    @cache_response(60 * 5, key_func=recipe_cache_key)
+    def retrieve(self, request, *args, **kwargs):
+        return super(RecipeViewSet, self).retrieve(request, *args, **kwargs)
+    def list(self, request, *args, **kwargs):
+        return super(RecipeViewSet, self).list(request, *args, **kwargs)
 
 class RecipeItemViewSet(viewsets.ModelViewSet):
     queryset = RecipeItem.objects.all()
@@ -151,10 +164,23 @@ class IngredientViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Ingredient.objects.filter(user=user)
 
-class MeasurementViewSet(viewsets.ReadOnlyModelViewSet):
+class MeasurementViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Measurement.objects.all()
     serializer_class = MeasurementSerializer
+    serializer_detail_class = MeasurementSerializer
+    def retrieve(self, request, *args, **kwargs):
+        return super(MeasurementViewSet, self).retrieve(request, *args, **kwargs)
+    @cache_response(31536000)
+    def list(self, request, *args, **kwargs):
+        return super(MeasurementViewSet, self).list(request, *args, **kwargs)
 
-class MealCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+class MealCategoryViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
     queryset = MealCategory.objects.all()
     serializer_class = MealCategorySerializer
+    serializer_detail_class = MealCategorySerializer
+    @cache_response(60 * 5, key_func=recipe_cache_key)
+    def retrieve(self, request, *args, **kwargs):
+        return super(MealCategoryViewSet, self).retrieve(request, *args, **kwargs)
+    @cache_response(31536000)
+    def list(self, request, *args, **kwargs):
+        return super(MealCategoryViewSet, self).list(request, *args, **kwargs)
