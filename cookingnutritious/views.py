@@ -30,17 +30,32 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+
+def food_retrieve_cache_key(view_instance, view_method, 
+                        request, args, kwargs):
+    return '.'.join([
+        'usda',
+        kwargs['pk']
+    ])
     
 class FoodViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = FoodSerializer
     serializer_detail_class = FoodDetailSerializer
     queryset = Food.objects.all()
-    @cache_response(31536000)
+    @cache_response(31536000, key_func=food_retrieve_cache_key)
     def retrieve(self, request, *args, **kwargs):
         return super(FoodViewSet, self).retrieve(request, *args, **kwargs)
     @cache_response(31536000)
     def list(self, request, *args, **kwargs):
         return super(FoodViewSet, self).list(request, *args, **kwargs)
+
+def search_cache_key(view_instance, view_method, 
+                        request, args, kwargs):
+    return '.'.join([
+        'usda',
+        'search',
+        kwargs['long_description']
+    ])
 
 class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = FoodSerializer
@@ -53,7 +68,7 @@ class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.Read
     def get_queryset(self, is_for_detail=False):
         terms = self.get_search_terms()
         return Food.objects.all().filter(terms)
-    @cache_response(31536000)
+    @cache_response(31536000, key_func=search_cache_key)
     def list(self, request, *args, **kwargs):
         terms = self.get_search_terms()
         result_count = Food.objects.all().filter(terms).count()
@@ -61,11 +76,11 @@ class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.Read
             return super(FoodSearchViewSet, self).list(request, *args, **kwargs)
         else:
             return self.retrieve(request, *args, **kwargs)
-    @cache_response(31536000)
+    @cache_response(31536000, key_func=search_cache_key)
     def retrieve(self, request, *args, **kwargs):
         terms = self.get_search_terms()
         object = Food.objects.all().filter(terms)
-        serializer = FoodDetailSerializer(object)
+        serializer = FoodDetailSerializer(object, context={'request': request})
         return Response(serializer.data)
 
 class RecipeViewSet(viewsets.ModelViewSet):
