@@ -178,7 +178,6 @@ class MealCategoryViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.Re
     queryset = MealCategory.objects.all()
     serializer_class = MealCategorySerializer
     serializer_detail_class = MealCategorySerializer
-    @cache_response(60 * 5, key_func=recipe_cache_key)
     def retrieve(self, request, *args, **kwargs):
         return super(MealCategoryViewSet, self).retrieve(request, *args, **kwargs)
     @cache_response(31536000)
