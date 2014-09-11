@@ -265,6 +265,10 @@ REST_FRAMEWORK_EXTENSIONS = {
       'rest_framework_extensions.utils.default_object_cache_key_func',
     'DEFAULT_LIST_CACHE_KEY_FUNC':
       'rest_framework_extensions.utils.default_list_cache_key_func',
+    'DEFAULT_OBJECT_ETAG_FUNC':
+      'rest_framework_extensions.utils.default_object_etag_func',
+    'DEFAULT_LIST_ETAG_FUNC':
+      'rest_framework_extensions.utils.default_list_etag_func',
 }
 
 CACHES = {
