@@ -13,13 +13,28 @@ from django.shortcuts import get_object_or_404
 from rest_framework_extensions.mixins import DetailSerializerMixin
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from rest_framework_extensions.cache.decorators import cache_response
+from rest_framework_extensions.key_constructor.constructors import (
+    KeyConstructor
+)
+from rest_framework_extensions.key_constructor import bits
 import operator
 
-def get_format(request):
-    if request.accepted_renderer.format == 'api' or 'json' == request.GET.get('format', False):
-        return 'json'
-    else:
-        return 'html'
+class CookingNutritiousKeyConstructor(KeyConstructor):
+    unique_view_id = bits.UniqueViewIdKeyBit()
+    language = bits.LanguageKeyBit()
+    format = bits.FormatKeyBit()
+
+class CookingNutritiousRetrieveKeyConstructor(CookingNutritiousKeyConstructor):
+    retrieve_sql_query = bits.RetrieveSqlQueryKeyBit()
+
+class CookingNutritiousListKeyConstructor(CookingNutritiousKeyConstructor):
+    list_sql_query = bits.ListSqlQueryKeyBit()
+
+class RecipeListKeyConstructor(CookingNutritiousListKeyConstructor):
+    user = bits.UserKeyBit()
+
+class RecipeRetrieveKeyConstructor(CookingNutritiousRetrieveKeyConstructor):
+    user = bits.UserKeyBit()
 
 # Create your views here.
 def index(request):
@@ -36,41 +51,17 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-
-def food_retrieve_cache_key(view_instance, view_method, 
-                        request, args, kwargs):
-    return '.'.join([
-        'usda',
-        kwargs['pk'],
-        get_format(request)
-    ])
-
-def food_list_cache_key(view_instance, view_method, 
-                        request, args, kwargs):
-    return '.'.join([
-        'usda',
-        get_format(request)
-    ])
     
 class FoodViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = FoodSerializer
     serializer_detail_class = FoodDetailSerializer
     queryset = Food.objects.all()
-    @cache_response(31536000, key_func=food_retrieve_cache_key)
+    @cache_response(31536000, key_func=CookingNutritiousRetrieveKeyConstructor())
     def retrieve(self, request, *args, **kwargs):
         return super(FoodViewSet, self).retrieve(request, *args, **kwargs)
-    @cache_response(31536000, key_func=food_list_cache_key)
+    @cache_response(31536000, key_func=CookingNutritiousListKeyConstructor())
     def list(self, request, *args, **kwargs):
         return super(FoodViewSet, self).list(request, *args, **kwargs)
-
-def search_cache_key(view_instance, view_method, 
-                        request, args, kwargs):
-    return '.'.join([
-        'usda',
-        'search',
-        kwargs['long_description'],
-        get_format(request)
-    ])
 
 class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = FoodSerializer
@@ -83,7 +74,7 @@ class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.Read
     def get_queryset(self, is_for_detail=False):
         terms = self.get_search_terms()
         return Food.objects.all().filter(terms)
-    @cache_response(31536000, key_func=search_cache_key)
+    @cache_response(31536000, key_func=CookingNutritiousListKeyConstructor())
     def list(self, request, *args, **kwargs):
         terms = self.get_search_terms()
         result_count = Food.objects.all().filter(terms).count()
@@ -91,7 +82,7 @@ class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.Read
             return super(FoodSearchViewSet, self).list(request, *args, **kwargs)
         else:
             return self.retrieve(request, *args, **kwargs)
-    @cache_response(31536000, key_func=search_cache_key)
+    @cache_response(31536000, key_func=CookingNutritiousRetrieveKeyConstructor())
     def retrieve(self, request, *args, **kwargs):
         terms = self.get_search_terms()
         object = Food.objects.all().filter(terms)
@@ -154,10 +145,10 @@ class RecipeViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ModelVie
         obj = compose_nutritional_information(obj, recipe_items)
         self.check_object_permissions(self.request, obj)
         return obj
-    @cache_response(60 * 2, key_func=recipe_detail_cache_key)
+    @cache_response(60 * 2, key_func=RecipeRetrieveKeyConstructor())
     def retrieve(self, request, *args, **kwargs):
         return super(RecipeViewSet, self).retrieve(request, *args, **kwargs)
-    @cache_response(60 * 2, key_func=recipe_list_cache_key)
+    @cache_response(60 * 2, key_func=RecipeListKeyConstructor())
     def list(self, request, *args, **kwargs):
         return super(RecipeViewSet, self).list(request, *args, **kwargs)
 
@@ -202,7 +193,7 @@ class MeasurementViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.Rea
     serializer_detail_class = MeasurementSerializer
     def retrieve(self, request, *args, **kwargs):
         return super(MeasurementViewSet, self).retrieve(request, *args, **kwargs)
-    @cache_response(31536000, key_func=measurement_list_cache_key)
+    @cache_response(31536000, key_func=CookingNutritiousListKeyConstructor())
     def list(self, request, *args, **kwargs):
         return super(MeasurementViewSet, self).list(request, *args, **kwargs)
 
@@ -218,6 +209,6 @@ class MealCategoryViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.Re
     serializer_detail_class = MealCategorySerializer
     def retrieve(self, request, *args, **kwargs):
         return super(MealCategoryViewSet, self).retrieve(request, *args, **kwargs)
-    @cache_response(31536000, key_func=mealcategories_list_cache_key)
+    @cache_response(31536000, key_func=CookingNutritiousListKeyConstructor())
     def list(self, request, *args, **kwargs):
         return super(MealCategoryViewSet, self).list(request, *args, **kwargs)
