@@ -15,8 +15,8 @@ from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from rest_framework_extensions.cache.decorators import cache_response
 import operator
 
-def get_serializer(request):
-    if request.accepted_renderer.format == 'api':
+def get_format(request):
+    if request.accepted_renderer.format == 'api' or 'json' == request.GET.get('format', False):
         return 'json'
     else:
         return 'html'
@@ -42,14 +42,14 @@ def food_retrieve_cache_key(view_instance, view_method,
     return '.'.join([
         'usda',
         kwargs['pk'],
-        get_serializer(request)
+        get_format(request)
     ])
 
 def food_list_cache_key(view_instance, view_method, 
                         request, args, kwargs):
     return '.'.join([
         'usda',
-        get_serializer(request)
+        get_format(request)
     ])
     
 class FoodViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
@@ -69,7 +69,7 @@ def search_cache_key(view_instance, view_method,
         'usda',
         'search',
         kwargs['long_description'],
-        get_serializer(request)
+        get_format(request)
     ])
 
 class FoodSearchViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
@@ -102,7 +102,7 @@ def recipe_list_cache_key(view_instance, view_method,
                         request, args, kwargs):
     return '.'.join([
         'recipes',
-        get_serializer(request)
+        get_format(request)
     ])
 
 def recipe_detail_cache_key(view_instance, view_method, 
@@ -110,7 +110,7 @@ def recipe_detail_cache_key(view_instance, view_method,
     return '.'.join([
         'recipes',
         kwargs['pk'],
-        get_serializer(request)
+        get_format(request)
     ])
 
 
@@ -193,7 +193,7 @@ def measurement_list_cache_key(view_instance, view_method,
                         request, args, kwargs):
     return '.'.join([
         'measurements',
-        get_serializer(request)
+        get_format(request)
     ])
 
 class MeasurementViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
@@ -210,7 +210,7 @@ def mealcategories_list_cache_key(view_instance, view_method,
                         request, args, kwargs):
     return '.'.join([
         'mealcategories',
-        get_serializer(request)
+        get_format(request)
     ])
 class MealCategoryViewSet(DetailSerializerMixin, CacheResponseMixin, viewsets.ReadOnlyModelViewSet):
     queryset = MealCategory.objects.all()
