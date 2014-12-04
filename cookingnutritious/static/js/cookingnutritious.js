@@ -33,6 +33,7 @@ function cn_clean_search_term(srch_val) {
     srch_val = srch_val.replace(/%20/g, '_');
     srch_val = srch_val.replace(/%2C/g, '');
     srch_val = srch_val.replace(/\'/g, 'XX');
+    srch_val = srch_val.replace(/\./g, 'QQ');
     srch_val = srch_val.replace(/%22/g, 'YY');
     srch_val = srch_val.replace(/"/g, 'YY');
     srch_val = srch_val.replace(/%2F/g, 'ZZ');
@@ -74,7 +75,8 @@ function get_nutrition_data(url) {
                     }
 
                     var measurement = measurements[$('#id_measurement option:selected').text()];
-                    if (measurement == "") {
+                    console.log(measurement);
+                    if (measurement == "" || measurement == undefined) {
                         measurement = 100;
                     }
                     

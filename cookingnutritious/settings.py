@@ -52,26 +52,27 @@ INSTALLED_APPS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-   'django.contrib.auth.context_processors.auth',
-   'django.core.context_processors.debug',
-   'django.core.context_processors.i18n',
-   'django.core.context_processors.media',
-   'django.core.context_processors.static',
-   'django.core.context_processors.tz',
-   'django.contrib.messages.context_processors.messages',
-   'social.apps.django_app.context_processors.backends',
-   'social.apps.django_app.context_processors.login_redirect',
-   #'payments.context_processors.payments_settings',
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.tz',
+    'django.contrib.messages.context_processors.messages',
+    'social.apps.django_app.context_processors.backends',
+    'social.apps.django_app.context_processors.login_redirect',
+    #'payments.context_processors.payments_settings',
 )
 
 AUTHENTICATION_BACKENDS = (
-   'social.backends.facebook.FacebookOAuth2',
-   'social.backends.google.GoogleOAuth2',
-   #'social.backends.twitter.TwitterOAuth',
-   'django.contrib.auth.backends.ModelBackend',
+    'social.backends.facebook.FacebookOAuth2',
+    'social.backends.google.GoogleOAuth2',
+    #'social.backends.twitter.TwitterOAuth',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -235,7 +236,7 @@ REST_FRAMEWORK = {
     # Use hyperlinked styles by default.
     # Only used if the `serializer_class` attribute is not set on a view.
     'DEFAULT_MODEL_SERIALIZER_CLASS':
-        'rest_framework.serializers.HyperlinkedModelSerializer',
+    'rest_framework.serializers.HyperlinkedModelSerializer',
 
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
@@ -254,7 +255,12 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/day',
-    }
+    },
+    'DEFAULT_RENDERER_CLASSES': ( 
+        'rest_framework.renderers.JSONRenderer', 
+        'rest_framework.renderers.JSONPRenderer', 
+        'rest_framework.renderers.BrowsableAPIRenderer', 
+    )
 
     #'PAGINATE_BY': 20,
 
@@ -262,13 +268,13 @@ REST_FRAMEWORK = {
 
 REST_FRAMEWORK_EXTENSIONS = {
     'DEFAULT_OBJECT_CACHE_KEY_FUNC':
-      'rest_framework_extensions.utils.default_object_cache_key_func',
+    'rest_framework_extensions.utils.default_object_cache_key_func',
     'DEFAULT_LIST_CACHE_KEY_FUNC':
-      'rest_framework_extensions.utils.default_list_cache_key_func',
+    'rest_framework_extensions.utils.default_list_cache_key_func',
     'DEFAULT_OBJECT_ETAG_FUNC':
-      'rest_framework_extensions.utils.default_object_etag_func',
+    'rest_framework_extensions.utils.default_object_etag_func',
     'DEFAULT_LIST_ETAG_FUNC':
-      'rest_framework_extensions.utils.default_list_etag_func',
+    'rest_framework_extensions.utils.default_list_etag_func',
 }
 
 CACHES = {
@@ -277,3 +283,10 @@ CACHES = {
         'LOCATION': '127.0.0.1:11211',
     }
 }
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:9000',
+    'caloriecounter.fitness'
+)
+
+CORS_ALLOW_CREDENTIALS = True

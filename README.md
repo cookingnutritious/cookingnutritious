@@ -32,6 +32,8 @@ This application depends on a range of different software listed below.
     pip install django-autocomplete-light
 ###django-memcached
     pip install django-memcached
+###django-cors-headers
+    pip install django-cors-headers
 
 ##loading USDA Database
 ###To import the latest SR22 data.  Simply use the `import_sr` management command

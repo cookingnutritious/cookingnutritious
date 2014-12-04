@@ -1,7 +1,7 @@
 import models
 import autocomplete_light
 from django import forms
-from forms import IngredientForm
+from forms import IngredientForm, MealIngredientForm
 from django.contrib import admin
 
 # Register your models here.
@@ -57,7 +57,7 @@ admin.site.register(models.Recipe, RecipeAdmin)
 
 class RecipeItemAdmin(FoodAdmin):
     pass
-admin.site.register(models.RecipeItem, RecipeAdmin)
+admin.site.register(models.RecipeItem, RecipeItemAdmin)
 
 class MeasurementAdmin(admin.ModelAdmin):
     pass
@@ -70,3 +70,36 @@ admin.site.register(models.MealCategory, MealCategoryAdmin)
 class TagAdmin(FoodAdmin):
     pass
 admin.site.register(models.Tag, TagAdmin)
+
+class MealIngredientAdmin(FoodAdmin):
+    form = MealIngredientForm
+    fieldsets = (
+        (None, {
+            'fields': ('name', )
+        }),
+        ('Nutrition Information', {
+            'fields': ('calories', 'calories_from_fat', 'total_fat', 'saturated_fat', 'trans_fat', 'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein', 'vitamin_a', 'vitamin_b', 'vitamin_c', 'vitamin_d', 'calcium', 'iron', 'potassium')
+        }),
+    )
+admin.site.register(models.MealIngredient, MealIngredientAdmin)
+
+
+class MealItemInline(admin.TabularInline):
+  model = models.MealItem
+  exclude = ('user',)
+  extra = 1
+
+class MealAdmin(FoodAdmin):
+    exclude = ('user', 'calories', 'calories_from_fat', 'total_fat', 'saturated_fat', 'trans_fat', 'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein', 'vitamin_a', 'vitamin_b', 'vitamin_c', 'vitamin_d', 'calcium', 'iron', 'potassium')
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            instance.user = request.user
+            instance.save()
+        formset.save_m2m()
+    inlines = [ MealItemInline ]
+admin.site.register(models.Meal, MealAdmin)
+
+class MealItemAdmin(FoodAdmin):
+    pass
+admin.site.register(models.MealItem, MealItemAdmin)
