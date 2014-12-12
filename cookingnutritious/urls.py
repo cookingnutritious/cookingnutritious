@@ -21,6 +21,8 @@ router.register(r'measurements', views.MeasurementViewSet)
 router.register(r'photos', views.RecipePhotoViewSet)
 router.register(r'tags', views.TagViewSet)
 router.register(r'usda', views.FoodViewSet)
+router.register(r'nutritionlogs', views.NutritionLogViewSet)
+router.register(r'nutritionprofile', views.NutritionProfileViewSet)
 
 template_name = {'template_name': 'rest_framework/login.html'}
 

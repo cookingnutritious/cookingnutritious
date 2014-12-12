@@ -11,8 +11,8 @@ from food.models import (
     MealCategory,
     MealItem,
     MealIngredient,
-    Meal
-)
+    Meal,
+    NutritionLog, NutritionProfile)
 from usda.models import Food
 
 
@@ -144,11 +144,10 @@ class MealMeasurementListingField(serializers.RelatedField):
 
 
 class MealIngredientSerializer(serializers.HyperlinkedModelSerializer):
-
     class Meta:
         model = MealIngredient
         fields = (
-            'url', 'id', 'name', 'calories', 'calories_from_fat', 'total_fat', 'saturated_fat', 'trans_fat',
+            'url', 'id', 'name', 'total_fat', 'saturated_fat', 'trans_fat',
             'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein', 'vitamin_a', 'vitamin_b',
             'vitamin_c',
             'vitamin_d', 'calcium', 'iron', 'potassium')
@@ -171,7 +170,6 @@ class UserListingField(serializers.RelatedField):
 
 
 class MealItemSerializer(serializers.HyperlinkedModelSerializer):
-
     class Meta:
         model = MealItem
         fields = ('url', 'id', 'measurement', 'meal', 'ingredient', 'amount')
@@ -187,7 +185,6 @@ class MealItemNestedSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class MealCategoryNestedSerializer(serializers.HyperlinkedModelSerializer):
-
     class Meta:
         model = MealCategory
         fields = ('url', 'name', 'id')
@@ -199,7 +196,8 @@ class MealSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Meal
-        fields = ('url', 'id', 'meal_category', 'day', 'meal_items', 'calories', 'calories_from_fat', 'total_fat',
+        fields = ('url', 'id', 'meal_category', 'day', 'meal_items', 'calories', 'calories_from_fat',
+                  'calories_from_carbohydrate', 'calories_from_net_carbohydrate', 'calories_from_protein', 'net_carbohydrate', 'total_fat',
                   'saturated_fat', 'trans_fat', 'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein',
                   'vitamin_a', 'vitamin_b', 'vitamin_c', 'vitamin_d', 'calcium', 'iron', 'potassium')
 
@@ -211,6 +209,23 @@ class TokenSerializer(serializers.HyperlinkedModelSerializer):
         model = Token
         depth = 1
         fields = ('key', 'user')
+
+
+class NutritionLogSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = NutritionLog
+        fields = ('url', 'id', 'day', 'weight', 'calories', 'calories_from_fat',
+                  'calories_from_carbohydrate', 'calories_from_net_carbohydrate', 'calories_from_protein', 'net_carbohydrate', 'total_fat',
+                  'saturated_fat', 'trans_fat', 'cholesterol', 'sodium', 'carbohydrate', 'fiber', 'sugars', 'protein',
+                  'vitamin_a', 'vitamin_b', 'vitamin_c', 'vitamin_d', 'calcium', 'iron', 'potassium')
+
+
+class NutritionProfileSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = NutritionProfile
+        fields = (
+            'url', 'id', 'day', 'target_calories', 'target_protein', 'target_carbohydrate', 'target_fat',
+            'target_fiber')
 
 
 class NutritionSerializer(serializers.Serializer):

@@ -19,8 +19,8 @@ from food.models import (
     Meal,
     MealItem,
     MealIngredient,
-    compose_nutritional_information
-)
+    compose_nutritional_information,
+    NutritionLog, NutritionProfile)
 from usda.models import Food 
 from django.contrib.auth.models import User, Group
 from cookingnutritious.serializers import (
@@ -39,8 +39,8 @@ from cookingnutritious.serializers import (
     FoodSerializer, 
     FoodDetailSerializer,
     TokenSerializer,
-    NutritionSerializer
-)
+    NutritionSerializer,
+    NutritionLogSerializer, NutritionProfileSerializer)
 from rest_framework import generics
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,
@@ -91,6 +91,10 @@ class MealListKeyConstructor(CookingNutritiousListKeyConstructor):
 
 
 class MealRetrieveKeyConstructor(CookingNutritiousRetrieveKeyConstructor):
+    user = bits.UserKeyBit()
+
+
+class NutritionLogRetrieveKeyConstructor(CookingNutritiousRetrieveKeyConstructor):
     user = bits.UserKeyBit()
 
 
@@ -211,7 +215,7 @@ class RecipeViewSet(DetailSerializerMixin, ETAGMixin, CacheResponseMixin, viewse
         recipes = Recipe.objects.filter(user=user)
         for recipe in recipes:
             recipe_items = RecipeItem.objects.filter(recipe=recipe)
-            compose_nutritional_information(recipe, recipe_items)
+            compose_nutritional_information(recipe, recipe_items, 'ingredient')
         return recipes
 
     def get_object(self, queryset=None):
@@ -240,7 +244,7 @@ class RecipeViewSet(DetailSerializerMixin, ETAGMixin, CacheResponseMixin, viewse
 
         obj = get_object_or_404(queryset, **filter_kwargs)
         recipe_items = RecipeItem.objects.filter(recipe=obj)
-        compose_nutritional_information(obj, recipe_items)
+        compose_nutritional_information(obj, recipe_items, 'ingredient')
         self.check_object_permissions(self.request, obj)
         return obj
     retrieve_key_constructor_func = RecipeRetrieveKeyConstructor(memoize_for_request=True)
@@ -373,7 +377,7 @@ class MealViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
 
         for meal in meals:
             meal_items = MealItem.objects.filter(meal=meal)
-            compose_nutritional_information(meal, meal_items)
+            compose_nutritional_information(meal, meal_items, 'ingredient')
         return meals
 
     def get_object(self, queryset=None):
@@ -407,8 +411,8 @@ class MealViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
             )
 
         obj = get_object_or_404(queryset, **filter_kwargs)
-        recipe_items = RecipeItem.objects.filter(recipe=obj)
-        compose_nutritional_information(obj, recipe_items)
+        meal_items = MealItem.objects.filter(meal=obj)
+        compose_nutritional_information(obj, meal_items, 'ingredient')
         self.check_object_permissions(self.request, obj)
         return obj
     
@@ -507,3 +511,109 @@ class NutritionList(generics.ListCreateAPIView):
     def list(self, request):
         ingredient = Ingredient()
         return Response(Ingredient.get_field_names(ingredient))
+
+
+class NutritionLogViewSet(DetailSerializerMixin, viewsets.ModelViewSet):
+    queryset = NutritionLog.objects.all()
+    serializer_class = NutritionLogSerializer
+    serializer_detail_class = NutritionLogSerializer
+
+    def get_queryset(self, is_for_detail=False):
+        user = self.request.user
+        nutrition_logs = NutritionLog.objects.filter(user=user)
+        startdate = self.request.GET.get('startdate', None)
+        enddate = self.request.GET.get('enddate', None)
+        if startdate is not None:
+            nutrition_logs = nutrition_logs.exclude(day__lt=startdate)
+        if enddate is not None:
+            nutrition_logs = nutrition_logs.exclude(day__gt=enddate)
+
+        for nutrition_log in nutrition_logs:
+            meals = Meal.objects.filter(user=user, day=nutrition_log.day)
+            for meal in meals:
+                meal_items = MealItem.objects.filter(meal=meal)
+                compose_nutritional_information(meal, meal_items, 'ingredient')
+            compose_nutritional_information(nutrition_log, meals)
+        return nutrition_logs
+
+    def get_object(self, queryset=None):
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        lookup = self.kwargs.get(lookup_url_kwarg, None)
+        pk = self.kwargs.get(self.pk_url_kwarg, None)
+        obj_id = self.kwargs.get(self.pk_url_kwarg, None)
+        slug = self.kwargs.get(self.slug_url_kwarg, None)
+
+        if lookup is not None:
+            filter_kwargs = {self.lookup_field: lookup}
+        elif obj_id is not None and self.lookup_field == 'obj_id':
+            warnings.warn(
+                PendingDeprecationWarning
+            )
+            filter_kwargs = {'obj_id': pk}
+        elif pk is not None and self.lookup_field == 'pk':
+            warnings.warn(
+                PendingDeprecationWarning
+            )
+            filter_kwargs = {'pk': pk}
+        elif slug is not None and self.lookup_field == 'pk':
+            warnings.warn(
+                PendingDeprecationWarning
+            )
+            filter_kwargs = {self.slug_field: slug}
+        else:
+            raise ImproperlyConfigured(
+                (self.__class__.__name__, self.lookup_field)
+            )
+
+        obj = get_object_or_404(queryset, **filter_kwargs)
+        recipe_items = RecipeItem.objects.filter(recipe=obj)
+        compose_nutritional_information(obj, recipe_items)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    retrieve_key_constructor_func = NutritionLogRetrieveKeyConstructor(memoize_for_request=True)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+
+        if serializer.is_valid():
+            serializer.object.user = request.user
+            self.pre_save(serializer.object)
+            self.object = serializer.save(force_insert=True)
+            self.post_save(self.object, created=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, *args, **kwargs):
+        return super(NutritionLogViewSet, self).retrieve(request, *args, **kwargs)
+    list_key_constructor_func = MealListKeyConstructor(memoize_for_request=True)
+
+    def list(self, request, *args, **kwargs):
+        return super(NutritionLogViewSet, self).list(request, *args, **kwargs)
+
+
+class NutritionProfileViewSet(viewsets.ModelViewSet):
+    queryset = NutritionProfile.objects.all()
+    serializer_class = NutritionProfileSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return NutritionProfile.objects.filter(user=user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
+
+        if serializer.is_valid():
+            serializer.object.user = request.user
+            self.pre_save(serializer.object)
+            self.object = serializer.save(force_insert=True)
+            self.post_save(self.object, created=True)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED,
+                            headers=headers)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
